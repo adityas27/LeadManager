@@ -19,6 +19,7 @@ import EmptyState from "../components/ui/EmptyState";
 import Button from "../components/ui/Button";
 import { StatSkeleton, TableSkeleton } from "../components/ui/Skeleton";
 import useLeadManager from "../hooks/useLeadManager";
+import LeadPagination from "../components/leads/LeadPagination";
 
 const STATUS_CARDS = [
   { key: "NEW", label: "New", icon: Inbox },
@@ -119,7 +120,7 @@ export default function DashboardPage() {
           onSearchChange={manager.setSearch}
           onStatusChange={manager.setStatus}
           onClear={manager.clearFilters}
-          count={manager.leads.length}
+          count={manager.pagination.count}
           refreshing={manager.loading || manager.refreshing}
         />
 
@@ -169,6 +170,13 @@ export default function DashboardPage() {
         ) : manager.leads.length > 0 ? (
           <div className={manager.refreshing ? "opacity-70" : undefined}>
             <LeadTable leads={manager.leads} onEdit={openEdit} onDelete={setDeleting} />
+            <LeadPagination
+              page={manager.page}
+              pageSize={manager.pageSize}
+              count={manager.pagination.count}
+              refreshing={manager.loading || manager.refreshing}
+              onPageChange={manager.setPage}
+            />
           </div>
         ) : null}
       </section>

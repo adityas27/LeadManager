@@ -30,6 +30,12 @@ function normalizeStats(data) {
 export default function useLeadManager() {
   const toast = useToast();
   const [leads, setLeads] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+  });
   const [stats, setStats] = useState(EMPTY_STATS);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -64,11 +70,31 @@ export default function useLeadManager() {
 
     try {
       const params = {};
+      params.page = page;
       if (activeSearch) params.search = activeSearch;
       if (activeStatus) params.status = activeStatus;
       const { data } = await leadService.list(params);
       if (id !== requestId.current) return;
-      setLeads(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        const totalPages = Math.max(1, Math.ceil(data.length / 10));
+        const safePage = Math.min(Math.max(page, 1), totalPages);
+        const start = (safePage - 1) * 10;
+        setLeads(data.slice(start, start + 10));
+        setPagination({ count: data.length, next: null, previous: null });
+        if (safePage !== page) setPage(safePage);
+      } else {
+        const nextLeads = Array.isArray(data?.results) ? data.results : [];
+        const count = Number.isFinite(data?.count) ? data.count : nextLeads.length;
+        setLeads(nextLeads);
+        setPagination({
+          count,
+          next: data?.next ?? null,
+          previous: data?.previous ?? null,
+        });
+
+        const totalPages = Math.max(1, Math.ceil(count / 10));
+        if (page > totalPages) setPage(totalPages);
+      }
       setError("");
     } catch (err) {
       if (id !== requestId.current) return;
@@ -79,11 +105,11 @@ export default function useLeadManager() {
         setRefreshing(false);
       }
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     refreshLeads();
-  }, [debouncedSearch, status, refreshLeads]);
+  }, [debouncedSearch, status, page, refreshLeads]);
 
   useEffect(() => {
     refreshStats();
@@ -159,21 +185,36 @@ export default function useLeadManager() {
   const clearFilters = useCallback(() => {
     setSearch("");
     setStatus("");
+    setPage(1);
+  }, []);
+
+  const setSearchAndResetPage = useCallback((value) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const setStatusAndResetPage = useCallback((value) => {
+    setStatus(value);
+    setPage(1);
   }, []);
 
   return {
     leads,
     stats,
     search,
-    setSearch,
+    setSearch: setSearchAndResetPage,
     status,
-    setStatus,
+    setStatus: setStatusAndResetPage,
     debouncedSearch,
     loading,
     refreshing,
     statsLoading,
     error,
     hasActiveFilters: Boolean(search.trim() || status),
+    page,
+    setPage,
+    pagination,
+    pageSize: 10,
     clearFilters,
     refreshLeads,
     refreshStats,

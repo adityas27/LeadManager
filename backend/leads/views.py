@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -9,6 +10,12 @@ from .models import Lead
 from .serializers import CreateEmployeeSerializer, LeadSerializer, UserSerializer
 
 User = get_user_model()
+
+
+class LeadPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 def _is_manager(user):
@@ -121,8 +128,10 @@ def lead_list(request):
         queryset, error = _filtered_leads(request)
         if error is not None:
             return error
-        serializer = LeadSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = LeadPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = LeadSerializer(page if page is not None else queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     serializer = LeadSerializer(data=request.data)
     if serializer.is_valid():

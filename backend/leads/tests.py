@@ -93,9 +93,30 @@ class LeadAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            [lead["id"] for lead in response.data],
+            [lead["id"] for lead in response.data["results"]],
             [newer.id, older.id],
         )
+
+    def test_list_leads_is_paginated(self):
+        for index in range(12):
+            self.create_lead(
+                name=f"Lead {index}",
+                email=f"lead{index}@example.com",
+            )
+
+        first_page = self.client.get(self.list_url, {"page": 1})
+        second_page = self.client.get(self.list_url, {"page": 2})
+
+        self.assertEqual(first_page.status_code, status.HTTP_200_OK)
+        self.assertEqual(first_page.data["count"], 12)
+        self.assertEqual(len(first_page.data["results"]), 10)
+        self.assertIsNotNone(first_page.data["next"])
+        self.assertIsNone(first_page.data["previous"])
+
+        self.assertEqual(second_page.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(second_page.data["results"]), 2)
+        self.assertIsNone(second_page.data["next"])
+        self.assertIsNotNone(second_page.data["previous"])
 
     def test_retrieve_lead(self):
         lead = self.create_lead()
@@ -231,8 +252,8 @@ class LeadAPITests(APITestCase):
         response = self.client.get(self.list_url, {"search": "aDa"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Ada Lovelace")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["name"], "Ada Lovelace")
 
     def test_filter_by_status(self):
         self.create_lead(name="Ada Lovelace", email="ada@example.com", status="NEW")
@@ -245,8 +266,8 @@ class LeadAPITests(APITestCase):
         response = self.client.get(self.list_url, {"status": "contacted"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["name"], "Grace Hopper")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["name"], "Grace Hopper")
 
     def test_invalid_status_filter(self):
         self.create_lead()
@@ -268,7 +289,7 @@ class LeadAPITests(APITestCase):
         response = self.client.get(self.list_url, {"search": "ada", "status": "NEW"})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual([lead["name"] for lead in response.data], ["Ada Lovelace"])
+        self.assertEqual([lead["name"] for lead in response.data["results"]], ["Ada Lovelace"])
 
     def test_dashboard_stats(self):
         self.create_lead(name="A", email="a@example.com", status="NEW")

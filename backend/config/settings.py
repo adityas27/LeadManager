@@ -23,7 +23,7 @@ def env_list(name, default=""):
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-lead-manager-secret-key")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = env_bool("DEBUG", True)
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
