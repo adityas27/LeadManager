@@ -69,7 +69,7 @@ CREATE DATABASE lead_manager;
 ```
 
 ### 2. Configure the backend
-
+Tweak `settings.py` as per your requirement while setting it up locally as instructions written in the same file for DB setup.
 ```powershell
 cd backend
 python -m venv venv
@@ -179,13 +179,12 @@ npm run build
 ## Assumptions
 
 - A manager owns the CRM-wide view and employee account management.
-- An employee can view and modify only leads assigned to or created by that employee.
+- An employee can view and modify only leads created by that employee.
 - Leads use the fixed statuses `NEW`, `CONTACTED`, `QUALIFIED`, and `LOST`.
 - Lead names are searchable; the demo does not provide advanced search across every field.
 - Each leads page contains 10 records.
 - Authentication is handled with JWT access and refresh tokens.
 - PostgreSQL is the expected database for both local and hosted deployments.
-- This repository is a demo and not a complete production CRM.
 
 ## Improvements for More Time
 
@@ -199,3 +198,4 @@ npm run build
 - Add CI/CD checks for migrations, tests, linting, and frontend builds
 - Improve loading, offline, and retry behavior
 - Add deployment documentation for Render and hosted PostgreSQL
+
