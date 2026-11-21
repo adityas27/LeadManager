@@ -26,7 +26,7 @@ def env_list(name, default=""):
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = env_bool("DEBUG", True)
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver")
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,leadmanager-y3pr.onrender.com")
 if "testserver" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("testserver")
 
