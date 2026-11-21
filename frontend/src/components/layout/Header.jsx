@@ -1,39 +1,50 @@
-import { LogOut, Menu, Shield, ShieldAlert, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { LayoutDashboard, LogOut, Shield, ShieldAlert, UsersRound } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth.jsx";
 import Button from "../ui/Button";
 
-export default function Header({ onMenuClick }) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+export default function Header() {
+  const { user, isManager, logout } = useAuth();
+
+  const navItems = [{ to: "/", label: "Leads", icon: LayoutDashboard }];
+  if (isManager) {
+    navItems.push({ to: "/employees", label: "Employees", icon: UsersRound });
+  }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/95 px-4 backdrop-blur-sm shadow-sm lg:px-8">
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          className="lg:hidden rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-        
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white shadow-md">
-            LM
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-lg font-semibold text-zinc-900 leading-none">
-              Lead<span className="text-indigo-600">Manager</span>
-            </h1>
-            <p className="text-xs text-zinc-500">CRM System</p>
-          </div>
-        </div>
-      </div>
+    <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 px-4 backdrop-blur-sm shadow-sm lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
+        <div className="flex h-full items-center gap-5">
+          <h1 className="hidden text-lg font-semibold text-zinc-900 sm:block">
+            Lead<span className="text-indigo-600">Manager</span>
+          </h1>
 
-      <div className="flex items-center gap-3">
+          <nav aria-label="Primary" className="flex h-full items-stretch gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end
+                  className={({ isActive }) =>
+                    `relative flex items-center gap-2 px-2 text-sm font-medium transition-colors sm:px-3 ${
+                      isActive
+                        ? "text-indigo-700 after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-indigo-600"
+                        : "text-zinc-600 hover:text-zinc-950"
+                    }`
+                  }
+                >
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-3">
         <div className="hidden md:flex items-center gap-2 mr-2">
           <div className="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5">
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-medium text-indigo-700">
@@ -64,6 +75,7 @@ export default function Header({ onMenuClick }) {
           <LogOut className="h-4 w-4" />
           <span className="hidden sm:inline">Sign Out</span>
         </Button>
+        </div>
       </div>
     </header>
   );
