@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 import AppShell from "./components/layout/AppShell";
 import DashboardPage from "./pages/DashboardPage";
@@ -72,6 +73,7 @@ export default function App() {
           </Routes>
         </ToastProvider>
       </AuthProvider>
+      <Analytics />
     </BrowserRouter>
   );
 }
